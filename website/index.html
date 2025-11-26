@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Sprint - Autonomous Multi-Agent Development for Claude Code</title>
+    <meta name="description" content="Stop prompting in circles. Agentic Sprint brings spec-driven, iterative development to Claude Code with coordinated AI agents.">
+    <meta name="keywords" content="Claude Code, AI development, autonomous agents, multi-agent, specification-driven development">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Agentic Sprint">
+    <meta property="og:description" content="Autonomous multi-agent development system for Claude Code">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --border: #2a2a35;
+            --code-bg: #1e1e2e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            background: var(--accent);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: var(--accent-light);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-badge span {
+            color: var(--success);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            max-width: 800px;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-muted);
+        }
+
+        /* Terminal Preview */
+        .terminal-preview {
+            margin-top: 4rem;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-width: 700px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27c93f; }
+
+        .terminal-content {
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .terminal-line {
+            display: block;
+        }
+
+        .terminal-prompt {
+            color: var(--success);
+        }
+
+        .terminal-command {
+            color: var(--text-primary);
+        }
+
+        .terminal-output {
+            color: var(--text-secondary);
+        }
+
+        .terminal-highlight {
+            color: var(--accent-light);
+        }
+
+        /* Section Styling */
+        section {
+            padding: 6rem 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* How It Works */
+        .workflow {
+            background: var(--bg-secondary);
+        }
+
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .workflow-step {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -1rem;
+            left: 1.5rem;
+            background: var(--accent);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .workflow-step h3 {
+            margin-top: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .workflow-step p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Agents Section */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .agent-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .agent-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-tag {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .feature h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Code Block */
+        .code-section {
+            background: var(--bg-secondary);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-content {
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+        }
+
+        .code-comment { color: #6a737d; }
+        .code-keyword { color: #ff7b72; }
+        .code-string { color: #a5d6ff; }
+        .code-function { color: #d2a8ff; }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            text-align: center;
+        }
+
+        .cta-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta-box h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 5rem 1.5rem 3rem;
+            }
+
+            .terminal-content {
+                font-size: 0.75rem;
+            }
+
+            section {
+                padding: 4rem 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="logo">🚀 Agentic Sprint</a>
+        <ul class="nav-links">
+            <li><a href="#how-it-works">How it Works</a></li>
+            <li><a href="#why">Why it Works</a></li>
+            <li><a href="#agents">Agents</a></li>
+            <li><a href="#manual-testing">Manual Testing</a></li>
+            <li><a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md">Docs</a></li>
+        </ul>
+        <a href="https://github.com/damienlaine/agentic-sprint" class="nav-cta">Get Started</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span>●</span> Open Source & MIT Licensed
+        </div>
+        <h1>Stop Prompting AI in Circles</h1>
+        <p class="hero-subtitle">
+            Agentic Sprint brings structured, spec-driven development to Claude Code.
+            A <strong>self-iterative state machine</strong> that reads your specs, orchestrates agents, and loops until the work is done.
+        </p>
+        <div class="hero-cta">
+            <a href="https://github.com/damienlaine/agentic-sprint" class="btn-primary">
+                View on GitHub →
+            </a>
+            <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+        </div>
+
+        <div class="terminal-preview">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+            </div>
+            <div class="terminal-content">
+                <span class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">/new-sprint Add user authentication with OAuth</span></span>
+                <span class="terminal-line"><span class="terminal-output">✓ Sprint 3 created at .claude/sprint/3/</span></span>
+                <span class="terminal-line"></span>
+                <span class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">/sprint</span></span>
+                <span class="terminal-line"><span class="terminal-output">→ Phase 1: Architect analyzing specs...</span></span>
+                <span class="terminal-line"><span class="terminal-output">→ Phase 2: Spawning python-dev, nextjs-dev</span></span>
+                <span class="terminal-line"><span class="terminal-output">→ Phase 3: Running qa-test-agent, ui-test-agent</span></span>
+                <span class="terminal-line"><span class="terminal-highlight">✓ Sprint 3 Complete - All tests passing</span></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="workflow" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>A spec-driven, self-iterative state machine in four phases</p>
+            </div>
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <h3>Write Specs</h3>
+                    <p>Create a simple specification file describing what you want to build. Can be one line or highly detailed.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <h3>Architect Plans</h3>
+                    <p>The Project Architect agent analyzes your specs and creates detailed API contracts and implementation guides.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <h3>Agents Build</h3>
+                    <p>Specialized agents (backend, frontend, CI/CD) implement the feature in parallel, following the specs.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <h3>Iterate & Converge</h3>
+                    <p>QA and UI tests validate. The state machine loops — refining specs, fixing issues — until convergence (max 5 iterations).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents -->
+    <section id="agents">
+        <div class="container">
+            <div class="section-header">
+                <h2>Extensible Agent System</h2>
+                <p>Start with built-in agents, extend with your own. The architecture is open by design.</p>
+            </div>
+            <div class="agents-grid">
+                <div class="agent-card">
+                    <div class="agent-icon">🏛️</div>
+                    <h3>Project Architect</h3>
+                    <p>Analyzes requirements, creates specifications, and coordinates all other agents. The decision-maker.</p>
+                    <span class="agent-tag">Coordination</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🐍</div>
+                    <h3>Python Dev</h3>
+                    <p>Builds FastAPI backends with async patterns, PostgreSQL, and proper security practices.</p>
+                    <span class="agent-tag">Backend</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">⚛️</div>
+                    <h3>Next.js Dev</h3>
+                    <p>Creates modern React applications with Next.js 16, TypeScript, and TailwindCSS.</p>
+                    <span class="agent-tag">Frontend</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🧪</div>
+                    <h3>QA Test Agent</h3>
+                    <p>Maintains automated test suites with API and unit tests. Validates against the API contract.</p>
+                    <span class="agent-tag">Testing</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🎭</div>
+                    <h3>UI Test Agent</h3>
+                    <p>Runs E2E browser tests via Playwright MCP. In manual mode, opens a live browser for you to explore while capturing errors.</p>
+                    <span class="agent-tag">E2E Testing</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🔧</div>
+                    <h3>CI/CD Agent</h3>
+                    <p>Configures pipelines, manages deployments, and sets up quality gates.</p>
+                    <span class="agent-tag">DevOps</span>
+                </div>
+            </div>
+
+            <!-- Allpurpose + Contribute -->
+            <div style="margin-top: 3rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.5rem;">🔮</span> Allpurpose Agent
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        No specialized agent for your stack? The <strong>allpurpose-agent</strong> adapts to any technology — Go, Rust, Flutter, Ruby, whatever. The architect automatically falls back to it when needed.
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        The architect creates appropriate specs and prompts it correctly. You just write your requirements.
+                    </p>
+                </div>
+                <div style="background: linear-gradient(135deg, var(--accent-glow) 0%, transparent 60%); border: 1px solid var(--accent); border-radius: 12px; padding: 2rem;">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.5rem;">🤝</span> Write Your Own
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        These agents are starting points, not final products. <strong>Fork, extend, contribute.</strong> Add agents for your stack, improve existing ones, share what works.
+                    </p>
+                    <a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md#adding-custom-agents" style="color: var(--accent-light); text-decoration: none; font-weight: 500;">
+                        Learn how to create agents →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why It Works -->
+    <section id="why" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why It Works</h2>
+                <p>A convergent process that eliminates AI's common failure modes</p>
+            </div>
+            <div class="workflow-steps" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+                <div class="workflow-step" style="border-left: 3px solid var(--accent);">
+                    <h3>Context Preservation</h3>
+                    <p>Each agent receives only what it needs — specs, contracts, relevant code. No wasted tokens on irrelevant history. Context windows stay lean and focused.</p>
+                </div>
+                <div class="workflow-step" style="border-left: 3px solid var(--success);">
+                    <h3>Specs Shrink, Not Grow</h3>
+                    <p>Completed work is removed from specifications. Each iteration focuses only on what remains. TODOs decrease, clarity increases.</p>
+                </div>
+                <div class="workflow-step" style="border-left: 3px solid #f59e0b;">
+                    <h3>Errors Get Erased</h3>
+                    <p>Working code stays untouched while issues get fixed. The signal-to-noise ratio improves with each pass. Mistakes don't compound.</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 2.5rem; color: var(--text-secondary); font-style: italic; max-width: 700px; margin-left: auto; margin-right: auto;">
+                Think of it like a diffusion process: the picture starts noisy, but with each iteration, noise reduces and clarity emerges. Most sprints converge well before 5 iterations. If not, the system pauses and asks what to do — you stay in control.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Key Features</h2>
+                <p>Everything you need for autonomous, spec-driven development</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">📋</div>
+                    <div>
+                        <h3>Specification-Driven</h3>
+                        <p>API contracts are the source of truth. Frontend and backend implement the same spec.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <div>
+                        <h3>Iterative Refinement</h3>
+                        <p>Autonomous iterations with a checkpoint at 5. System pauses to ask — continue, adjust, or intervene.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <h3>Parallel Execution</h3>
+                        <p>Implementation agents run in parallel. UI testing and diagnostics run together.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <div>
+                        <h3>MCP Integration</h3>
+                        <p>Leverages Playwright and Next.js DevTools MCP for browser automation and error monitoring.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <div>
+                        <h3>Structured Reports</h3>
+                        <p>Every agent returns machine-parseable reports. Easy to track progress and issues.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌍</div>
+                    <div>
+                        <h3>i18n Built-In</h3>
+                        <p>French and English support throughout. Agents use i18n keys, never hardcoded strings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Manual Testing -->
+    <section id="manual-testing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Manual Testing Mode</h2>
+                <p>Explore your app with live error monitoring</p>
+            </div>
+            <div class="features-grid" style="margin-bottom: 2rem;">
+                <div class="feature">
+                    <div class="feature-icon">🎭</div>
+                    <div>
+                        <h3>Live Browser via Playwright</h3>
+                        <p>A real browser opens pointing to your app. Click around, test forms, explore edge cases yourself.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔍</div>
+                    <div>
+                        <h3>Parallel Error Monitoring</h3>
+                        <p>A diagnostics agent watches for runtime errors in real-time. We ship one for Next.js — write your own for any stack with observability tools.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📋</div>
+                    <div>
+                        <h3>Reports on Close</h3>
+                        <p>When you close the browser, both agents finalize and return comprehensive reports of everything captured.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <h3>Quick Access</h3>
+                        <p>Run <code style="background: var(--bg-tertiary); padding: 0.2rem 0.5rem; border-radius: 4px;">/sprint --manual</code> to skip the full workflow and jump straight to manual testing.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Example -->
+    <section class="code-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Simple Sprint Spec</h2>
+                <p>All you need to start a sprint</p>
+            </div>
+            <div class="code-block">
+                <div class="code-header">.claude/sprint/1/specs.md</div>
+                <div class="code-content">
+<pre><span class="code-comment"># Sprint 1 Specifications</span>
+
+<span class="code-keyword">## Goal</span>
+Add user authentication with OAuth and email/password
+
+<span class="code-keyword">## Scope</span>
+- User registration and login
+- OAuth with Google and GitHub
+- Password reset flow
+- Protected dashboard route
+
+<span class="code-keyword">## Testing</span>
+- QA: <span class="code-string">required</span>
+- UI Testing: <span class="code-string">required</span>
+- UI Testing Mode: <span class="code-string">automated</span></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box">
+                <h2>Ready to Try Agentic Sprint?</h2>
+                <p>Clone the repo, copy to your project, and run your first autonomous sprint.</p>
+                <a href="https://github.com/damienlaine/agentic-sprint" class="btn-primary">
+                    Get Started on GitHub →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/damienlaine/agentic-sprint">GitHub</a>
+            <a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md">Documentation</a>
+            <a href="https://github.com/damienlaine/agentic-sprint/blob/main/LICENSE">MIT License</a>
+            <a href="https://github.com/damienlaine/agentic-sprint/issues">Issues</a>
+        </div>
+        <p class="footer-copy">
+            Built with Claude Code. Open source under MIT License.
+        </p>
+        <p class="footer-copy" style="margin-top: 0.75rem; font-size: 0.75rem; opacity: 0.7;">
+            This documentation and website were generated with AI assistance. May contain errors.
+        </p>
+    </footer>
+</body>
+</html>
