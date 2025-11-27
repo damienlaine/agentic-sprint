@@ -37,23 +37,23 @@ Most sprints converge well before 5 iterations. If they don't, the system pauses
 
 Two files give agents persistent memory across sprints — reducing token usage and keeping context focused:
 
-**`.claude/project-goals.md`** — The business brain
+**`.claude/project-goals.md`** — The business brain *(you maintain this)*
 - Product vision and target audience
 - Market analysis and differentiators
 - Success metrics and constraints
 - What you're building and *why*
 
-The architect reads this to make decisions aligned with your product goals, not just technical specs.
+The more detail you provide, the sharper and more shrewd the architect becomes. This is your input — the architect reads it to make decisions aligned with your product goals, not just technical specs.
 
-**`.claude/project-map.md`** — The technical brain
+**`.claude/project-map.md`** — The technical brain *(architect maintains this)*
 - Project structure and architecture
 - API surface and database schema
 - Routes, components, environment variables
 - *Where* everything lives and *how* it connects
 
-Agents read this instead of scanning the entire codebase. Straight to the relevant files.
+Agents read this instead of scanning the entire codebase. Straight to the relevant files. The architect keeps it lean and current — no bloat, just truth.
 
-Both files are maintained by the architect and stay lean — no bloat, just current truth. This is how agents "remember" your project without consuming your context window.
+This is how agents "remember" your project without consuming your context window.
 
 ## Quick Start
 
