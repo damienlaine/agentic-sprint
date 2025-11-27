@@ -545,8 +545,8 @@
         <ul class="nav-links">
             <li><a href="#how-it-works">How it Works</a></li>
             <li><a href="#why">Why it Works</a></li>
+            <li><a href="#second-brain">Second Brain</a></li>
             <li><a href="#agents">Agents</a></li>
-            <li><a href="#manual-testing">Manual Testing</a></li>
             <li><a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md">Docs</a></li>
         </ul>
         <a href="https://github.com/damienlaine/agentic-sprint" class="nav-cta">Get Started</a>
@@ -717,6 +717,49 @@
             </div>
             <p style="text-align: center; margin-top: 2.5rem; color: var(--text-secondary); font-style: italic; max-width: 700px; margin-left: auto; margin-right: auto;">
                 Think of it like a diffusion process: the picture starts noisy, but with each iteration, noise reduces and clarity emerges. Most sprints converge well before 5 iterations. If not, the system pauses and asks what to do — you stay in control.
+            </p>
+        </div>
+    </section>
+
+    <!-- Second Brain -->
+    <section id="second-brain">
+        <div class="container">
+            <div class="section-header">
+                <h2>The Second Brain Effect</h2>
+                <p>Persistent memory that survives across sprints — without bloating your context</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🎯</div>
+                    <h3 style="margin-bottom: 0.5rem; color: var(--accent-light);">project-goals.md</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">The Business Brain</p>
+                    <ul style="color: var(--text-secondary); font-size: 0.95rem; list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 0.5rem;">• Product vision and target audience</li>
+                        <li style="margin-bottom: 0.5rem;">• Market analysis and differentiators</li>
+                        <li style="margin-bottom: 0.5rem;">• Success metrics and constraints</li>
+                        <li style="margin-bottom: 0.5rem;">• What you're building and <em>why</em></li>
+                    </ul>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        The architect reads this to make decisions aligned with your product goals, not just technical specs.
+                    </p>
+                </div>
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🗺️</div>
+                    <h3 style="margin-bottom: 0.5rem; color: var(--accent-light);">project-map.md</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">The Technical Brain</p>
+                    <ul style="color: var(--text-secondary); font-size: 0.95rem; list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 0.5rem;">• Project structure and architecture</li>
+                        <li style="margin-bottom: 0.5rem;">• API surface and database schema</li>
+                        <li style="margin-bottom: 0.5rem;">• Routes, components, env variables</li>
+                        <li style="margin-bottom: 0.5rem;">• <em>Where</em> everything lives and <em>how</em> it connects</li>
+                    </ul>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        Agents read this instead of scanning the entire codebase. Straight to the relevant files.
+                    </p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 2.5rem; color: var(--text-secondary); max-width: 700px; margin-left: auto; margin-right: auto;">
+                Both files are maintained by the architect and stay lean — no bloat, just current truth. This is how agents "remember" your project without consuming your context window.
             </p>
         </div>
     </section>
