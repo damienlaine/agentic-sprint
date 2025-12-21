@@ -1,108 +1,34 @@
 # MCP Coordination Patterns
 
-> How Agentic Sprint coordinates parallel agents using MCP tools and file-based signaling.
+> How Sprint coordinates parallel agents using Chrome browser MCP and Next.js DevTools MCP.
 
 ## Overview
 
-When running UI tests, two agents work in parallel:
-- **UI Test Agent** - Uses Playwright to interact with the browser
-- **Next.js Diagnostics Agent** - Monitors for runtime errors
+When running UI tests, agents work in parallel:
+- **UI Test Agent** - Uses Chrome browser MCP to interact with the browser
+- **Next.js Diagnostics Agent** (optional) - Monitors for runtime errors via Next.js DevTools MCP
 
-These agents have no direct communication channel. We use a **file-based signaling pattern** to coordinate their lifecycle.
-
-## The Problem
-
-```
-┌─────────────────┐     ┌─────────────────────┐
-│  UI Test Agent  │     │  Diagnostics Agent  │
-│  (Playwright)   │     │  (Next.js DevTools) │
-└────────┬────────┘     └──────────┬──────────┘
-         │                         │
-         │  Both spawned           │
-         │  simultaneously         │
-         │                         │
-         │  ← No communication →   │
-         │                         │
-         │  How does diagnostics   │
-         │  know when to stop?     │
-         │                         │
-```
-
-**Challenge:** The diagnostics agent polls for errors continuously. It has no way to know when the UI test agent finishes (either automated tests complete or user closes browser in manual mode).
-
-## The Solution: Signal File
-
-We use a simple file-based signal:
-
-```
-.claude/sprint/[N]/.ui-test-done
-```
-
-### Flow
-
-```
-1. Orchestrator deletes any stale signal file
-   rm -f .claude/sprint/[N]/.ui-test-done
-
-2. Orchestrator spawns BOTH agents in parallel
-   (single message with multiple Task calls)
-
-3. UI Test Agent:
-   - Runs tests (or waits for manual interaction)
-   - When done: writes signal file
-   - Returns report
-
-4. Diagnostics Agent:
-   - Polls for errors
-   - Between polls: checks for signal file
-   - When signal file exists: stops polling
-   - Returns report
-
-5. Orchestrator:
-   - Collects both reports
-   - Cleans up signal file
-   - Proceeds with workflow
-```
-
-### Signal File Content
-
-Simple content: `done`
-
-```bash
-# UI Test Agent writes:
-echo "done" > .claude/sprint/[N]/.ui-test-done
-```
-
-```python
-# Diagnostics Agent checks:
-try:
-    read(".claude/sprint/[N]/.ui-test-done")
-    # File exists → stop polling
-except:
-    # File doesn't exist → continue polling
-```
+These agents use separate MCP toolsets and coordinate through the orchestrator.
 
 ## MCP Tool Separation
 
 Each agent uses a specific set of MCP tools:
 
-### UI Test Agent - Playwright Only
+### UI Test Agent - Chrome Browser MCP
 
 ```
-mcp__playwright__browser_navigate
-mcp__playwright__browser_snapshot
-mcp__playwright__browser_click
-mcp__playwright__browser_type
-mcp__playwright__browser_fill_form
-mcp__playwright__browser_take_screenshot
-mcp__playwright__browser_console_messages
-mcp__playwright__browser_wait_for
-mcp__playwright__browser_close
+mcp__claude-in-chrome__tabs_context_mcp
+mcp__claude-in-chrome__tabs_create_mcp
+mcp__claude-in-chrome__navigate
+mcp__claude-in-chrome__computer
+mcp__claude-in-chrome__read_page
+mcp__claude-in-chrome__read_console_messages
+mcp__claude-in-chrome__read_network_requests
 ```
 
-**Why:** Clear responsibility - handles browser interaction.
+**Why:** Handles browser interaction and user-facing testing.
 
-### Diagnostics Agent - Next.js DevTools Only
+### Diagnostics Agent - Next.js DevTools MCP
 
 ```
 mcp__next-devtools__nextjs_index
@@ -110,7 +36,72 @@ mcp__next-devtools__nextjs_call
 mcp__next-devtools__nextjs_docs
 ```
 
-**Why:** Monitors server-side errors that browser tools can't see.
+**Why:** Monitors server-side errors, hydration issues, and compilation errors that browser tools can't see.
+
+## Testing Modes
+
+### Automated Mode
+
+Both agents complete when their tasks finish:
+
+```
+┌─────────────────┐     ┌─────────────────────┐
+│  UI Test Agent  │     │  Diagnostics Agent  │
+└────────┬────────┘     └──────────┬──────────┘
+         │                         │
+         │ Run test scenarios      │ Poll for errors
+         │                         │
+         │ All tests complete      │ Monitoring active
+         │                         │
+         │ Return report           │ Return report
+         │                         │
+```
+
+### Manual Mode
+
+In manual mode, the UI test agent detects when the user closes the browser tab:
+
+```
+┌─────────────────┐     ┌─────────────────────┐
+│  UI Test Agent  │     │  Diagnostics Agent  │
+└────────┬────────┘     └──────────┬──────────┘
+         │                         │
+         │ Open browser            │ Poll for errors
+         │                         │
+         │ User interacts...       │ Monitoring active
+         │                         │
+         │ User closes tab         │ ...continues...
+         │ (detected via           │
+         │  tabs_context_mcp)      │ Agent times out
+         │                         │   or orchestrator
+         │ Return report           │   collects reports
+         │                         │
+```
+
+**Tab Close Detection:** The UI test agent periodically checks if its tabId still exists in the tab list. When the user closes the tab, the agent knows testing is complete.
+
+```
+Call: mcp__claude-in-chrome__tabs_context_mcp
+
+If tabId not in response → user closed tab → testing complete
+```
+
+## Parallel Spawn Requirement
+
+Both agents MUST be spawned in the **same message** for true parallel execution:
+
+```
+# CORRECT - Parallel execution
+Task: ui-test-agent ...
+Task: nextjs-diagnostics-agent ...
+
+# WRONG - Sequential execution
+Task: ui-test-agent ...
+[wait for completion]
+Task: nextjs-diagnostics-agent ...
+```
+
+The orchestrator spawns both agents in a single message, then collects their reports when they complete.
 
 ## Docker vs Local Environments
 
@@ -137,139 +128,36 @@ The MCP endpoint works through Docker port mapping:
 http://localhost:8001/_next/mcp
 ```
 
-## Testing Modes
-
-### Automated Mode
-
-```
-┌─────────────────┐     ┌─────────────────────┐
-│  UI Test Agent  │     │  Diagnostics Agent  │
-└────────┬────────┘     └──────────┬──────────┘
-         │                         │
-         │ Run test scenarios      │ Poll for errors
-         │                         │
-         │ All tests complete      │ Check signal file
-         │                         │   (not found)
-         │ Write signal file       │
-         │                         │ Check signal file
-         │                         │   (found!)
-         │ Return report           │ Stop polling
-         │                         │ Return report
-```
-
-### Manual Mode
-
-```
-┌─────────────────┐     ┌─────────────────────┐
-│  UI Test Agent  │     │  Diagnostics Agent  │
-└────────┬────────┘     └──────────┬──────────┘
-         │                         │
-         │ Open browser            │ Poll for errors
-         │                         │
-         │ User interacts...       │ Check signal file
-         │                         │   (not found)
-         │                         │ Poll for errors
-         │ User closes browser     │   ...continues...
-         │                         │
-         │ Write signal file       │ Check signal file
-         │                         │   (found!)
-         │ Return report           │ Stop polling
-         │                         │ Return report
-```
-
-## Implementation Details
-
-### Orchestrator Cleanup
-
-Before spawning:
-```bash
-rm -f .claude/sprint/[N]/.ui-test-done
-```
-
-After collecting reports:
-```bash
-rm -f .claude/sprint/[N]/.ui-test-done
-```
-
-### UI Test Agent Signal Write
-
-Using the Write tool:
-```
-Path: .claude/sprint/[N]/.ui-test-done
-Content: done
-```
-
-### Diagnostics Agent Signal Check
-
-Using the Read tool:
-```
-Path: .claude/sprint/[N]/.ui-test-done
-
-If read succeeds → signal file exists → stop
-If read fails → signal file missing → continue polling
-```
-
 ## Error Handling
 
-### Agent Crash
+### Agent Timeout
 
-If one agent crashes:
-- The other agent may wait indefinitely
-- Orchestrator should implement timeout
+If an agent takes too long:
+- The orchestrator should implement timeout logic
 - Consider health check mechanisms
+- Diagnostics agent uses longer timeout for manual mode (~5 minutes)
 
-### Stale Signal File
+### Missing Tab
 
-Always delete before starting:
-```bash
-rm -f .claude/sprint/[N]/.ui-test-done
+If the browser tab is closed unexpectedly:
+- UI test agent detects via `tabs_context_mcp`
+- Agent captures final state if possible
+- Returns partial report with explanation
+
+## Manual Test Reports
+
+The `/sprint:test` command saves reports to the sprint directory:
+
+```
+.claude/sprint/[N]/manual-test-report.md
 ```
 
-This prevents false positives from previous runs.
+When `/sprint` runs, it reads these reports and passes them to the architect for prioritization. Reports are automatically cleaned up when the sprint completes.
 
-### Parallel Spawn Requirement
+## Report Lifecycle
 
-Both agents MUST be spawned in the **same message**:
+1. **User runs `/sprint:test`** → Report saved to sprint directory
+2. **User runs `/sprint`** → Architect reads report, prioritizes fixes
+3. **Sprint completes** → Report cleaned up (no longer relevant)
 
-```
-# CORRECT - Parallel execution
-Task: ui-test-agent ...
-Task: nextjs-diagnostics-agent ...
-
-# WRONG - Sequential execution
-Task: ui-test-agent ...
-[wait for completion]
-Task: nextjs-diagnostics-agent ...
-```
-
-## Why File-Based Signaling?
-
-**Alternatives considered:**
-
-1. **Shared memory** - Agents don't share state
-2. **Direct communication** - Agents can't call each other
-3. **Orchestrator polling** - Adds complexity and latency
-4. **Timeout-based** - Unpredictable test durations
-
-**File-based advantages:**
-
-- Simple and universal
-- Works with any agent type
-- No inter-process communication needed
-- Easy to debug (check if file exists)
-- Works across different execution environments
-
-## Extending the Pattern
-
-For other parallel agent scenarios:
-
-1. Define a signal file path convention
-2. Writer agent creates file when done
-3. Reader agent polls for file existence
-4. Orchestrator cleans up before/after
-
-Example for hypothetical parallel builds:
-```
-.claude/sprint/[N]/.build-backend-done
-.claude/sprint/[N]/.build-frontend-done
-```
+This ensures user observations from manual testing feed directly into the automated sprint workflow.

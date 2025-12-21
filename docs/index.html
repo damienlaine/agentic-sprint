@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentic Sprint - Autonomous Multi-Agent Development for Claude Code</title>
-    <meta name="description" content="Stop prompting in circles. Agentic Sprint brings spec-driven, iterative development to Claude Code with coordinated AI agents.">
+    <title>Sprint - Autonomous Multi-Agent Development for Claude Code | Agentic Forge</title>
+    <meta name="description" content="Stop prompting in circles. Sprint brings spec-driven, iterative development to Claude Code with coordinated AI agents. Part of Agentic Forge.">
     <meta name="keywords" content="Claude Code, AI development, autonomous agents, multi-agent, specification-driven development">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Agentic Sprint">
-    <meta property="og:description" content="Autonomous multi-agent development system for Claude Code">
+    <meta property="og:title" content="Sprint | Agentic Forge">
+    <meta property="og:description" content="Autonomous multi-agent development plugin for Claude Code">
     <meta property="og:type" content="website">
 
     <!-- Favicon -->
@@ -541,30 +541,30 @@
 <body>
     <!-- Navigation -->
     <nav>
-        <a href="#" class="logo">🚀 Agentic Sprint</a>
+        <a href="#" class="logo">🚀 Sprint</a>
         <ul class="nav-links">
             <li><a href="#how-it-works">How it Works</a></li>
             <li><a href="#why">Why it Works</a></li>
-            <li><a href="#second-brain">Second Brain</a></li>
             <li><a href="#agents">Agents</a></li>
+            <li><a href="#install">Install</a></li>
             <li><a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md">Docs</a></li>
         </ul>
-        <a href="https://github.com/damienlaine/agentic-sprint" class="nav-cta">Get Started</a>
+        <a href="https://github.com/damienlaine/agentic-forge" class="nav-cta">GitHub</a>
     </nav>
 
     <!-- Hero -->
     <section class="hero">
         <div class="hero-badge">
-            <span>●</span> Open Source & MIT Licensed
+            <span>●</span> Claude Code Plugin — Open Source & MIT Licensed
         </div>
         <h1>Stop Prompting AI in Circles</h1>
         <p class="hero-subtitle">
-            Agentic Sprint brings structured, spec-driven development to Claude Code.
+            <strong>Sprint</strong> is a Claude Code plugin from <a href="https://github.com/damienlaine/agentic-forge" style="color: var(--accent-light);">Agentic Forge</a> that brings structured, spec-driven development with coordinated AI agents.
             A <strong>self-iterative state machine</strong> that reads your specs, orchestrates agents, and loops until the work is done.
         </p>
         <div class="hero-cta">
-            <a href="https://github.com/damienlaine/agentic-sprint" class="btn-primary">
-                View on GitHub →
+            <a href="#install" class="btn-primary">
+                Install Plugin →
             </a>
             <a href="#how-it-works" class="btn-secondary">See How It Works</a>
         </div>
@@ -576,7 +576,7 @@
                 <div class="terminal-dot green"></div>
             </div>
             <div class="terminal-content">
-                <span class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">/new-sprint Add user authentication with OAuth</span></span>
+                <span class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">/sprint:new Add user authentication</span></span>
                 <span class="terminal-line"><span class="terminal-output">✓ Sprint 3 created at .claude/sprint/3/</span></span>
                 <span class="terminal-line"></span>
                 <span class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">/sprint</span></span>
@@ -655,7 +655,7 @@
                 <div class="agent-card">
                     <div class="agent-icon">🎭</div>
                     <h3>UI Test Agent</h3>
-                    <p>Runs E2E browser tests via Playwright MCP. In manual mode, opens a live browser for you to explore while capturing errors.</p>
+                    <p>Runs E2E browser tests via Chrome browser MCP. In manual mode, opens a live browser for you to explore while capturing errors.</p>
                     <span class="agent-tag">E2E Testing</span>
                 </div>
                 <div class="agent-card">
@@ -797,7 +797,7 @@
                     <div class="feature-icon">🎯</div>
                     <div>
                         <h3>MCP Integration</h3>
-                        <p>Leverages Playwright and Next.js DevTools MCP for browser automation and error monitoring.</p>
+                        <p>Leverages Chrome browser and Next.js DevTools MCP for browser automation and error monitoring.</p>
                     </div>
                 </div>
                 <div class="feature">
@@ -808,10 +808,10 @@
                     </div>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">🌍</div>
+                    <div class="feature-icon">🔮</div>
                     <div>
-                        <h3>i18n Built-In</h3>
-                        <p>French and English support throughout. Agents use i18n keys, never hardcoded strings.</p>
+                        <h3>Multi-Paradigm</h3>
+                        <p>Works with any tech stack. Specialized agents for Python and Next.js, plus an allpurpose-agent for everything else.</p>
                     </div>
                 </div>
             </div>
@@ -829,29 +829,29 @@
                 <div class="feature">
                     <div class="feature-icon">🎭</div>
                     <div>
-                        <h3>Live Browser via Playwright</h3>
-                        <p>A real browser opens pointing to your app. Click around, test forms, explore edge cases yourself.</p>
+                        <h3>Live Chrome Browser</h3>
+                        <p>A real Chrome browser opens pointing to your app. Click around, test forms, explore edge cases yourself.</p>
                     </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">🔍</div>
                     <div>
                         <h3>Parallel Error Monitoring</h3>
-                        <p>A diagnostics agent watches for runtime errors in real-time. We ship one for Next.js — write your own for any stack with observability tools.</p>
+                        <p>Console errors are captured in real-time. For Next.js, a diagnostics agent also watches for hydration and compilation errors.</p>
                     </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">📋</div>
                     <div>
-                        <h3>Reports on Close</h3>
-                        <p>When you close the browser, both agents finalize and return comprehensive reports of everything captured.</p>
+                        <h3>Reports When Done</h3>
+                        <p>Close the browser tab when you're done testing. The agent detects this and returns a comprehensive report to continue the sprint.</p>
                     </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">⚡</div>
                     <div>
-                        <h3>Quick Access</h3>
-                        <p>Run <code style="background: var(--bg-tertiary); padding: 0.2rem 0.5rem; border-radius: 4px;">/sprint --manual</code> to skip the full workflow and jump straight to manual testing.</p>
+                        <h3>Two Ways to Test</h3>
+                        <p>Set <code style="background: var(--bg-tertiary); padding: 0.2rem 0.5rem; border-radius: 4px;">UI Testing Mode: manual</code> in specs for sprints, or use <code style="background: var(--bg-tertiary); padding: 0.2rem 0.5rem; border-radius: 4px;">/sprint:test</code> for quick standalone testing.</p>
                     </div>
                 </div>
             </div>
@@ -888,14 +888,42 @@ Add user authentication with OAuth and email/password
         </div>
     </section>
 
+    <!-- Installation -->
+    <section id="install" class="code-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Installation</h2>
+                <p>Install as a Claude Code plugin in seconds</p>
+            </div>
+            <div class="code-block" style="max-width: 600px;">
+                <div class="code-header">Option 1: From Agentic Forge (recommended)</div>
+                <div class="code-content">
+<pre><span class="code-comment"># Add the marketplace</span>
+<span class="code-prompt">$</span> /plugin marketplace add damienlaine/agentic-forge
+
+<span class="code-comment"># Install the plugin</span>
+<span class="code-prompt">$</span> /plugin install sprint</pre>
+                </div>
+            </div>
+            <div class="code-block" style="max-width: 600px; margin-top: 1.5rem;">
+                <div class="code-header">Option 2: Local development</div>
+                <div class="code-content">
+<pre><span class="code-comment"># Clone and run with plugin</span>
+<span class="code-prompt">$</span> git clone https://github.com/damienlaine/agentic-sprint
+<span class="code-prompt">$</span> claude --plugin-dir ./agentic-sprint</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA -->
     <section class="cta-section">
         <div class="container">
             <div class="cta-box">
-                <h2>Ready to Try Agentic Sprint?</h2>
-                <p>Clone the repo, copy to your project, and run your first autonomous sprint.</p>
-                <a href="https://github.com/damienlaine/agentic-sprint" class="btn-primary">
-                    Get Started on GitHub →
+                <h2>Ready to Try Sprint?</h2>
+                <p>Install the plugin and run your first autonomous sprint in minutes.</p>
+                <a href="https://github.com/damienlaine/agentic-forge" class="btn-primary">
+                    View on GitHub →
                 </a>
             </div>
         </div>
@@ -904,13 +932,13 @@ Add user authentication with OAuth and email/password
     <!-- Footer -->
     <footer>
         <div class="footer-links">
-            <a href="https://github.com/damienlaine/agentic-sprint">GitHub</a>
+            <a href="https://github.com/damienlaine/agentic-forge">Agentic Forge</a>
+            <a href="https://github.com/damienlaine/agentic-sprint">Plugin Repo</a>
             <a href="https://github.com/damienlaine/agentic-sprint/blob/main/docs/AGENTS.md">Documentation</a>
             <a href="https://github.com/damienlaine/agentic-sprint/blob/main/LICENSE">MIT License</a>
-            <a href="https://github.com/damienlaine/agentic-sprint/issues">Issues</a>
         </div>
         <p class="footer-copy">
-            Built with Claude Code. Open source under MIT License.
+            Built with Claude Code. Part of <a href="https://github.com/damienlaine/agentic-forge" style="color: var(--text-secondary);">Agentic Forge</a>.
         </p>
         <p class="footer-copy" style="margin-top: 0.75rem; font-size: 0.75rem; opacity: 0.7;">
             This documentation and website were generated with AI assistance. May contain errors.

@@ -1,39 +1,14 @@
+---
+name: sprint
+description: Run the autonomous multi-agent sprint workflow with spec-driven development
+---
+
 # Sprint Command - Autonomous Development Workflow Orchestrator
 
 ## You Are the Sprint Orchestrator
 
 You manage the complete autonomous sprint execution from specifications -> architecture -> implementation -> testing -> finalization.
 You coordinate agents in the correct *sequence*, not in parallel chaos.
-
-## Command Arguments
-
-The `/sprint` command accepts optional flags:
-
-- `/sprint` - Normal sprint execution (architect-driven workflow)
-- `/sprint --manual` - **Direct manual UI testing** (skips architect, goes straight to PHASE 3)
-
-**Parse the command arguments first.**
-
-### If `--manual` flag is present:
-
-This is a **shortcut mode** that bypasses the normal architect workflow:
-
-1. Set `global_manual_mode = true`
-2. Skip PHASE 1 (architect planning) and PHASE 2 (implementation)
-3. Go directly to PHASE 3 with:
-   - `testing_mode = "MANUAL"`
-   - `ui-test-agent` requested (implicit)
-   - No QA tests
-4. After UI testing completes, return reports to user and END (no architect review)
-
-This is useful for:
-- Quick manual testing without full sprint workflow
-- Resuming a sprint just to do manual testing
-- Ad-hoc UI exploration with error monitoring
-
-### If no flag:
-
-Normal sprint execution - architect controls the workflow.
 
 # High-Level Workflow
 
@@ -46,19 +21,7 @@ PHASE 5 - Finalization
 
 # Phase 0
 
-## Step 0: Parse Command Arguments
-
-Check if the `/sprint` command was invoked with `--manual` flag:
-- If `/sprint --manual` -> set `global_manual_mode = true`
-- If `/sprint` (no flag) -> set `global_manual_mode = false`
-
-**If `global_manual_mode = true`:**
-- Still execute Step 1 (locate sprint) and Step 2 (detect project type)
-- But SKIP Step 3 (launch architect) and Step 4 (iteration loop)
-- Jump directly to PHASE 3 - UI Testing with `testing_mode = "MANUAL"`
-- After PHASE 3 completes, save reports and END (no architect review, no finalization)
-
-## Step 1: Locate Sprint Specifications
+## Step 1: Locate Sprint and Determine State
 
 Find the highest sprint index in the current project:
 ```bash
@@ -67,31 +30,98 @@ ls -d .claude/sprint/*/ 2>/dev/null | sort -V | tail -1
 
 The result should be something like `.claude/sprint/3/` - this is your **sprint directory**.
 
-Verify that `specs.md` exists in this directory:
+Check what files exist:
 ```bash
-test -f .claude/sprint/[N]/specs.md && echo "Found" || echo "Missing"
+test -f .claude/sprint/[N]/specs.md && echo "SPECS_EXISTS"
+test -f .claude/sprint/[N]/status.md && echo "STATUS_EXISTS"
+test -f .claude/sprint/[N]/manual-test-report.md && echo "MANUAL_REPORT_EXISTS"
 ```
 
-If specs.md is missing, check the status.md file, this is were we want to resume sprint.
+### Case A: No sprint directory exists
 
-Read the specs and/or status to understand what the user wants to build (for your own context).
+Tell the user:
+```
+No sprint found. Create one first with /sprint:new
+```
+Stop here.
 
-## Step 2: Detect Project Type
+### Case B: specs.md exists but no status.md (Fresh sprint)
 
-Check if this is a Next.js project:
+This is a new sprint. Proceed to Step 2.
+
+### Case C: status.md exists (Resuming sprint)
+
+Read the status.md to understand current state. Then **ask the user what they want to do:**
+
+**If status.md indicates sprint is COMPLETE/DONE:**
+
+Use AskUserQuestion tool:
+```
+Sprint [N] appears to be complete.
+
+Options:
+1. "Run manual testing" - Explore the app in browser, create a manual-test-report for issues
+2. "Continue with fixes" - Tell me what needs more work
+3. "Create new sprint" - Start fresh with /sprint:new
+```
+
+- If user chooses "Run manual testing": Tell them to use `/sprint:test` and stop.
+- If user chooses "Continue with fixes": Ask what needs work, then proceed to Step 2.
+- If user chooses "Create new sprint": Tell them to use `/sprint:new` and stop.
+
+**If status.md indicates sprint is IN PROGRESS:**
+
+Check for manual-test-report.md:
+- If exists: Proceed to Step 2 (will use the report to inform architect)
+- If not exists: Ask user:
+
+```
+Sprint [N] is in progress.
+
+Options:
+1. "Continue sprint" - Resume where we left off
+2. "Run manual testing first" - Explore the app to find issues before continuing
+```
+
+- If user chooses "Continue sprint": Proceed to Step 2.
+- If user chooses "Run manual testing first": Tell them to use `/sprint:test` and stop.
+
+## Step 2: Check for Existing Reports
+
+Look for any existing reports in the sprint directory that the architect should know about:
+
 ```bash
-# Check for Next.js indicators
-test -f frontend/next.config.ts -o -f frontend/next.config.js -o -f next.config.ts -o -f next.config.js && echo "NEXTJS" || echo "OTHER"
+ls .claude/sprint/[N]/*-report*.md 2>/dev/null
 ```
 
-Store this result:
-```
-is_nextjs_project = true/false
+This includes:
+- `manual-test-report.md` - From `/sprint:test` command (user observations)
+- `backend-report-*.md` - From previous implementation iterations
+- `frontend-report-*.md` - From previous implementation iterations
+- `qa-report-*.md` - From previous QA runs
+- `ui-test-report-*.md` - From previous UI test runs
+
+**Important:** The `manual-test-report.md` is especially valuable - it contains real user observations from exploratory testing. If present, include its contents when spawning the architect.
+
+## Step 3: Detect Project Type
+
+Detect the project's tech stack for framework-specific diagnostics:
+
+```bash
+# Check for various frameworks
+test -f frontend/next.config.ts -o -f frontend/next.config.js -o -f next.config.ts -o -f next.config.js && echo "NEXTJS"
+test -f nuxt.config.ts -o -f nuxt.config.js && echo "NUXT"
+test -f angular.json && echo "ANGULAR"
+test -f vite.config.ts -o -f vite.config.js && echo "VITE"
+test -f pyproject.toml -o -f requirements.txt && echo "PYTHON"
+test -f go.mod && echo "GO"
+test -f Cargo.toml && echo "RUST"
 ```
 
-This will be used in PHASE 3 to determine whether to spawn nextjs-diagnostics-agent.
+Store detected frameworks for optional diagnostics agents.
+For Next.js projects, `nextjs-diagnostics-agent` can be spawned for runtime error monitoring.
 
-## Step 3: Launch Project Architect
+## Step 4: Launch Project Architect
 
 Spawn the `project-architect` agent with this prompt:
 
@@ -102,6 +132,17 @@ Sprint directory: .claude/sprint/[N]/
 Specifications: .claude/sprint/[N]/specs.md
 Status: .claude/sprint/[N]/status.md
 
+[If manual-test-report.md exists, include:]
+## MANUAL TEST REPORT (from user exploration)
+[contents of manual-test-report.md]
+
+This report contains observations from manual testing. Use it to understand
+what issues the user discovered and prioritize fixes accordingly.
+
+[If other reports exist, include:]
+## EXISTING REPORTS
+[list of report files found]
+
 Execute your full sprint workflow (Phase 0 -> Phase 5).
 
 When you need implementers, testers, or any agent, return:
@@ -111,12 +152,11 @@ When you need implementers, testers, or any agent, return:
 
 When ready for QA, explicitly request: qa-test-agent
 When ready for UI tests: ui-test-agent
-When ready for UI tests with manual testing: ui-test-agent --manual
 
 I will execute these agents in the correct workflow sequence.
 ```
 
-## Step 4: Iteration Loop
+## Step 5: Iteration Loop
 
 Use this **Loop logic**:
 
@@ -155,7 +195,6 @@ Wait for the architect response.
 
 2. If the architect requests `qa-test-agent` or `ui-test-agent`:
 - This means the architect believes implementation is ready for testing.
-- Check if `--manual` flag is present -> set `manual_testing_mode = true`
 - Set:
     stage = "qa"
 - Move to PHASE 3.
@@ -270,91 +309,64 @@ Collect the QA report.
 
 If `ui-test-agent` was requested:
 
-### Determine testing mode:
-- If `global_manual_mode = true` (from `/sprint --manual`): `testing_mode = "MANUAL"`
-- Else if architect requested `ui-test-agent --manual`: `testing_mode = "MANUAL"`
-- Else if specs.md has `UI Testing Mode: manual`: `testing_mode = "MANUAL"`
-- Otherwise: `testing_mode = "AUTOMATED"`
+### Determine testing mode
 
-### Clean up signal file (MANUAL mode only):
-Before spawning agents, delete any stale signal file from previous runs:
-```bash
-rm -f .claude/sprint/[N]/.ui-test-done
-```
+Check specs.md for `UI Testing Mode`:
+- If `UI Testing Mode: manual` -> set `testing_mode = "MANUAL"`
+- Otherwise -> set `testing_mode = "AUTOMATED"`
 
-### Spawn UI testing agents IN PARALLEL:
-
-**Always spawn `ui-test-agent`:**
+### Spawn UI testing agent
 
 ```
 Execute UI tests for sprint [N].
 
 Sprint directory: .claude/sprint/[N]/
 UI Test Specs: .claude/sprint/[N]/ui-test-specs.md
-Frontend URL: http://localhost:8001
+Frontend URL: [from specs or project-map, default http://localhost:3000]
 
 MODE: [AUTOMATED or MANUAL]
 
 If AUTOMATED:
 - Execute all test scenarios from ui-test-specs.md
-- Close browser when tests complete
-- Return UI TEST REPORT
+- Return UI TEST REPORT when done
 
 If MANUAL:
 - Open browser and navigate to frontend URL
-- Take initial snapshot to confirm app is loaded
-- DO NOT close the browser - wait for user to close it manually
-- While waiting, periodically check browser console for errors
-- When browser is closed externally, return UI TEST REPORT with session summary
+- Take initial screenshot to confirm app is loaded
+- Monitor console for errors while user interacts
+- Detect when user closes the browser tab
+- Return UI TEST REPORT with session summary
 
-Use only Playwright MCP tools (mcp__playwright__*).
+Use only Chrome browser MCP tools (mcp__claude-in-chrome__*).
 ```
 
-**If `is_nextjs_project = true`, ALSO spawn `nextjs-diagnostics-agent` in parallel:**
+**If Next.js project detected, ALSO spawn `nextjs-diagnostics-agent` in parallel:**
+
+This is optional and only applicable for Next.js projects. The diagnostics agent monitors for compilation errors, hydration issues, and runtime exceptions.
 
 ```
 Monitor Next.js runtime during UI testing for sprint [N].
 
 Sprint directory: .claude/sprint/[N]/
-Frontend Port: 8001
-
-DEPLOYMENT: Docker (nextjs_index will NOT work - use port directly)
+Frontend Port: [from specs or default 3000]
 
 MODE: [AUTOMATED or MANUAL]
 
-IMPORTANT:
-- Skip nextjs_index discovery (Docker container won't be detected)
-- Call nextjs_call DIRECTLY with port="8001"
-- Tool names are snake_case: get_errors, get_routes (NOT getErrors, getRoutes)
-
-Workflow:
-1. Call mcp__next-devtools__nextjs_call with port="8001", toolName="get_errors"
-2. Poll for compilation errors, runtime errors, and warnings
-3. Check for stop signal file: .claude/sprint/[N]/.ui-test-done
-4. When signal file exists, stop and return NEXTJS DIAGNOSTICS REPORT
-
-Use only Next.js DevTools MCP tools (mcp__next-devtools__*).
+Use Next.js DevTools MCP tools (mcp__next-devtools__*).
 ```
 
-### IMPORTANT: Parallel execution
+### Parallel execution (when applicable)
 
-Both `ui-test-agent` and `nextjs-diagnostics-agent` (if Next.js) must be spawned in the **same message** using multiple Task tool calls. They run in parallel.
+If spawning multiple testing agents (ui-test + diagnostics), spawn them in the **same message** using multiple Task tool calls.
 
-### Wait for completion:
+### Wait for completion
 
-- In AUTOMATED mode: Both agents complete when their tests/monitoring finish
-- In MANUAL mode: Both agents complete when the browser is closed by the user
+- In AUTOMATED mode: Agents complete when their tests/monitoring finish
+- In MANUAL mode: UI test agent completes when user closes the browser tab
 
 ## Step 3: Collect and Save Reports
 
-After all testing agents complete:
-
-- Clean up signal file (if MANUAL mode was used):
-  ```bash
-  rm -f .claude/sprint/[N]/.ui-test-done
-  ```
-
-- Save reports as:
+After all testing agents complete, save reports as:
   - `.claude/sprint/[N]/qa-report-[iteration].md` (if qa-test-agent ran)
   - `.claude/sprint/[N]/ui-test-report-[iteration].md` (if ui-test-agent ran)
   - `.claude/sprint/[N]/nextjs-diagnostics-report-[iteration].md` (if nextjs-diagnostics-agent ran)
@@ -389,7 +401,6 @@ In each architect review cycle, the architect may:
   - Return a SPAWN REQUEST with `qa-test-agent` -> go to PHASE 3.
 - Request UI tests:
   - Return a SPAWN REQUEST with `ui-test-agent` -> go to PHASE 3.
-  - May include `--manual` for manual testing mode.
 - Approve sprint and finalize:
   - Indicate Phase 5 complete -> go to PHASE 5.
 - Request specification changes or report blockers:
@@ -433,7 +444,14 @@ When the architect signals that Phase 5 is complete:
 
     .claude/sprint/[N]/status.md
 
-2) Report sprint completion to the user:
+2) **Clean up ephemeral reports:**
+
+   Delete manual test reports - they're no longer relevant after the sprint completes:
+   ```bash
+   rm -f .claude/sprint/[N]/manual-test-report*.md
+   ```
+
+3) Report sprint completion to the user:
 
     Sprint [N] Complete
 
@@ -446,8 +464,8 @@ Terminate the sprint.
 
 - Implementation agents (backend, frontend, db, cicd, etc.) MAY run in parallel.
 - QA (qa-test-agent) runs first, then UI tests.
-- UI testing agents (`ui-test-agent` + `nextjs-diagnostics-agent`) run IN PARALLEL with each other.
-- `nextjs-diagnostics-agent` is ONLY spawned if `is_nextjs_project = true`.
+- UI testing agents run using Chrome browser MCP tools.
+- Framework-specific diagnostics agents are OPTIONAL (e.g., `nextjs-diagnostics-agent` for Next.js).
 - The architect is always the decision-maker for:
   - which agents to spawn
   - when to move to QA
@@ -458,18 +476,6 @@ Terminate the sprint.
   - current phase
   - current iteration
   - what is being run (architect, implementation, QA, UI)
-
-# MANUAL TESTING MODE
-
-When `--manual` flag is present in ui-test-agent request:
-
-1. The UI test agent opens a browser but does NOT auto-close it
-2. The nextjs-diagnostics-agent (if Next.js) monitors for errors continuously
-3. YOU (the user) can interact with the browser manually to test the app
-4. All errors are captured by the diagnostics agent
-5. When YOU close the browser, both agents finalize and return their reports
-
-This allows hybrid testing: automated setup + manual exploration + error monitoring.
 
 # Summary
 

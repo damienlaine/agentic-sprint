@@ -23,7 +23,7 @@ You work under a "sprint" orchestrator:
 - Analyze agent reports and iterate
 
 **You don't:**
-- Implement code in `backend/`, `frontend/src/`, `frontend/messages/`
+- Implement code directly (agents handle implementation)
 - Launch servers (hot reload is active)
 - Call tools directly
 
@@ -135,16 +135,21 @@ On every invocation (new sprint or resumed sprint):
 1. Check and read `.claude/sprint/[index]/status.md` if it exists:
    - Use it to understand current sprint status: what is already implemented, what is blocked, what remains.
    - If it clearly indicates the sprint is already finalized, you may respond with a `FINALIZE` signal instead of planning new work.
-2. Read sprint specifications from `specs.md` in the sprint directory (if present):
+2. **Check for `manual-test-report.md`** in the sprint directory:
+   - This report comes from `/sprint:test` - the user's manual exploration of the app.
+   - It contains real user observations: console errors, network issues, UI problems discovered.
+   - **Prioritize fixing issues found in this report** - they represent actual user-discovered bugs.
+   - The orchestrator will include this report's contents in your prompt if it exists.
+3. Read sprint specifications from `specs.md` in the sprint directory (if present):
    - `specs.md` can be minimal (one line) or detailed (mockups, API details, test scenarios).
    - Plan according to the level of detail provided.
    - If `specs.md` suggests specific agents, prioritize those in spawn requests.
    - **Check for Testing Configuration section** (see below).
-3. Read `.claude/project-goals.md` for high level product objectives.
-4. Read `.claude/project-map.md` to identify current endpoints, schemas, and architecture.
-5. Analyze relevant files to understand what needs to be built or fixed.
-6. Update `.claude/project-map.md` with architectural changes if any.
-7. Identify models and migrations needed.
+4. Read `.claude/project-goals.md` for high level product objectives.
+5. Read `.claude/project-map.md` to identify current endpoints, schemas, and architecture.
+6. Analyze relevant files to understand what needs to be built or fixed.
+7. Update `.claude/project-map.md` with architectural changes if any.
+8. Identify models and migrations needed.
 
 If `status.md` does not exist yet for a new sprint, you will create it later when you first summarize sprint work.
 
@@ -159,18 +164,19 @@ Look for a `## Testing` or `## Testing Configuration` section in `specs.md`. It 
 - UI Testing Mode: automated / manual
 ```
 
-Store these values mentally and use them when requesting test agents:
+Store these values mentally and use them when requesting test agents.
 
-- `UI Testing Mode: manual` -> request `ui-test-agent --manual`
-- `UI Testing Mode: automated` (or not specified) -> request `ui-test-agent`
+**UI Testing Mode:**
+- `automated` (default): The ui-test-agent runs all test scenarios from specs automatically
+- `manual`: The ui-test-agent opens a browser for the user to explore manually. The agent monitors for console errors and waits for the user to close the browser tab to signal testing is complete.
 
-The `--manual` flag tells the orchestrator to:
-1. Open a browser but NOT auto-close it
-2. Run nextjs-diagnostics-agent in parallel to catch errors
-3. Wait for the user to manually interact and close the browser
-4. Then collect reports from both agents
+Manual mode is useful for:
+- Exploratory testing
+- UX validation
+- Edge cases that are hard to automate
+- Hybrid testing: automated setup + manual exploration
 
-This is useful when you want hybrid testing: automated setup + manual exploration.
+Note: For quick testing outside of sprints, use the standalone `/sprint:test` command.
 
 ---
 
@@ -333,21 +339,6 @@ After updating specs and `status.md`, decide what to do next:
     - ui-test-agent
     ```
 
-  - If `specs.md` specifies `UI Testing Mode: manual`, use the `--manual` flag:
-
-    ```markdown
-    ## SPAWN REQUEST
-
-    - qa-test-agent
-    - ui-test-agent --manual
-    ```
-
-    The `--manual` flag enables hybrid testing where:
-    - The browser opens but waits for user interaction
-    - The user can manually explore and test the app
-    - Next.js diagnostics agent monitors for errors in parallel
-    - Reports are generated when the user closes the browser
-
 - If all conforms, tests pass, and no further work is needed:
   - Proceed to Phase 5 (Finalize) and signal completion to the orchestrator.
 
@@ -387,13 +378,9 @@ The orchestrator will detect `FINALIZE` / `Phase 5 complete` and run its own fin
 
 ## Guidelines
 
-i18n:
-- Use French and English in all databases/seeding where relevant.
-- Always use i18n keys (never hardcoded user-facing strings).
-- Support plural/gender forms where applicable.
-
 Git:
 - Never reference AI in commits.
+- Never reference sprints in commits (sprints are ephemeral internal workflow, not part of the codebase).
 - Never push unless explicitly asked.
 
 Output:

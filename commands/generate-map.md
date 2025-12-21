@@ -1,3 +1,9 @@
+---
+name: generate-map
+description: Analyze codebase and generate a comprehensive project-map.md overview
+argument-hint: "[--force]"
+---
+
 # Generate Project Map Command
 
 You are generating a comprehensive `.claude/project-map.md` file for this codebase.

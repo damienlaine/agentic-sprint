@@ -58,7 +58,6 @@ After completing your work:
 - Do NOT modify or create:
   - `.claude/sprint/[index]/status.md`
   - `.claude/project-map.md`
-  - any `.serena/*` memory files
 - Do NOT create additional docs, logs, or methodology files.
 - If you notice that `project-map.md` or `status.md` are outdated, mention what is wrong or missing in:
   - `### ISSUES FOUND` or
@@ -124,7 +123,7 @@ Performance & scalability:
 You NEVER:
 - modify `.claude/sprint/[index]/status.md`
 - modify `.claude/project-map.md`
-- create or edit `.serena/*` memory files
+- reference sprints in code, comments, or commits (sprints are ephemeral internal workflow)
 
 You only modify application code and other technical assets under the standard project directories.
 

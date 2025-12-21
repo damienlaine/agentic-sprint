@@ -12,7 +12,7 @@ You NEVER:
 - spawn other agents
 - modify `.claude/sprint/[index]/status.md`
 - modify `.claude/project-map.md`
-- create or edit `.serena/*` memory files
+- reference sprints in code, comments, or commits (sprints are ephemeral internal workflow)
 
 You ONLY:
 - read CI/CD specs and relevant project files
@@ -152,7 +152,6 @@ After completing your work:
 - Do NOT modify:
   - `.claude/sprint/[index]/status.md`
   - `.claude/project-map.md`
-  - any `.serena/*` memory files
 - Do NOT create additional documents (no methodology docs, no long READMEs).
 - If you believe `status.md` or `project-map.md` should be updated, mention it in **ISSUES FOUND** for the architect.
 

@@ -1,18 +1,20 @@
-# Agentic Sprint
+# Sprint
 
-> Autonomous multi-agent development system for Claude Code. Spec-driven, iterative sprints with specialized agents.
+> Autonomous multi-agent development plugin for Claude Code. Spec-driven, iterative sprints with specialized agents.
 
-**Stop prompting in circles.** Agentic Sprint replaces ad-hoc AI coding with structured, specification-driven development. Write specs, run `/sprint`, and let coordinated agents handle the rest.
+**Part of [Agentic Forge](https://github.com/damienlaine/agentic-forge)** — Claude Code plugins for autonomous AI workflows.
+
+**Stop prompting in circles.** Sprint replaces ad-hoc AI coding with structured, specification-driven development. Write specs, run `/sprint`, and let coordinated agents handle the rest.
 
 At its core, the `/sprint` command is a **spec-driven, self-iterative state machine** — it reads your specifications, orchestrates specialized agents through defined phases, and loops autonomously until the work is done or validation passes.
 
-## What is Agentic Sprint?
+## What is Sprint?
 
-Agentic Sprint is a framework that turns Claude Code into an autonomous development team:
+Sprint is a Claude Code plugin that turns Claude into an autonomous development team:
 
 - **Project Architect** analyzes requirements, creates specifications, and coordinates work
-- **Implementation Agents** (Python, Next.js, CI/CD) build features according to specs
-- **Testing Agents** (QA, UI, Diagnostics) validate the implementation
+- **Implementation Agents** (Python, Next.js, CI/CD, or any tech via allpurpose-agent) build features according to specs
+- **Testing Agents** (QA, UI) validate the implementation
 - **Sprint Orchestrator** — the self-iterative state machine that manages phases, handoffs, and convergence
 
 ```
@@ -23,7 +25,7 @@ The orchestrator drives the loop: specs in, working code out. No manual interven
 
 ### Why It Works
 
-Unlike single-shot prompting where context bloats and AI mistakes compound, Agentic Sprint uses a **convergent multi-pass approach**:
+Unlike single-shot prompting where context bloats and AI mistakes compound, Sprint uses a **convergent multi-pass approach**:
 
 - **Context preservation** — Each agent receives only what it needs (specs, contract, relevant code). No wasted tokens on irrelevant history.
 - **Specs shrink, not grow** — Completed work is removed from specs. Each iteration focuses only on what remains.
@@ -32,6 +34,14 @@ Unlike single-shot prompting where context bloats and AI mistakes compound, Agen
 Think of it like a **diffusion process**: the picture starts noisy, but with each iteration, the noise reduces and clarity emerges. By the final pass, only the solution remains.
 
 Most sprints converge well before 5 iterations. If they don't, the system pauses and asks you what to do — adjust specs, continue iterating, or intervene manually. You stay in control.
+
+### Multi-Paradigm Design
+
+Sprint is **technology-agnostic**. While it includes specialized agents for Python/FastAPI and Next.js, the system works with any tech stack:
+
+- The `allpurpose-agent` adapts to Go, Rust, Flutter, Ruby, or any technology
+- Create your own specialized agents for your preferred stack
+- The architect automatically selects appropriate agents based on project structure
 
 ### The Second Brain Effect
 
@@ -43,7 +53,7 @@ Two files give agents persistent memory across sprints — reducing token usage 
 - Success metrics and constraints
 - What you're building and *why*
 
-The more detail you provide, the sharper and more shrewd the architect becomes. This is your input — the architect reads it to make decisions aligned with your product goals, not just technical specs.
+The more detail you provide, the sharper and more shrewd the architect becomes.
 
 **`.claude/project-map.md`** — The technical brain *(architect maintains this)*
 - Project structure and architecture
@@ -51,29 +61,50 @@ The more detail you provide, the sharper and more shrewd the architect becomes. 
 - Routes, components, environment variables
 - *Where* everything lives and *how* it connects
 
-Agents read this instead of scanning the entire codebase. Straight to the relevant files. The architect keeps it lean and current — no bloat, just truth.
+Agents read this instead of scanning the entire codebase. The architect keeps it lean and current.
 
-This is how agents "remember" your project without consuming your context window.
+## Installation
 
-## Quick Start
+### From Agentic Forge (recommended)
 
-### 1. Install
+```bash
+# Add the marketplace
+/plugin marketplace add damienlaine/agentic-forge
 
-Copy the `.claude` folder to your project:
+# Install the plugin
+/plugin install sprint
+
+# Update to latest version
+/plugin marketplace update damienlaine/agentic-forge
+```
+
+### Local Development
 
 ```bash
 # Clone this repo
 git clone https://github.com/damienlaine/agentic-sprint.git
 
-# Copy to your project
-cp -r agentic-sprint/.claude your-project/
+# Run Claude Code with the plugin
+claude --plugin-dir ./agentic-sprint
 ```
+
+## Quick Start
+
+### 1. Set Up Your Project
+
+```bash
+# Interactive project onboarding
+/sprint:setup
+```
+
+This creates both Second Brain documents through guided questions:
+- `.claude/project-goals.md` (business vision)
+- `.claude/project-map.md` (technical architecture)
 
 ### 2. Create Your First Sprint
 
 ```bash
-# In your project directory with Claude Code
-/new-sprint
+/sprint:new
 ```
 
 This creates `.claude/sprint/1/specs.md`. Edit it with your requirements.
@@ -91,44 +122,137 @@ Watch the agents work:
 4. Architect reviews and iterates (up to 5 times)
 5. Sprint completes with a status summary
 
-## Core Concepts
+## Commands
 
-### Sprint Directory Structure
+| Command | Description |
+|---------|-------------|
+| `/sprint` | Run the full sprint workflow |
+| `/sprint:new` | Create a new sprint |
+| `/sprint:setup` | Interactive project onboarding |
+| `/sprint:test` | Manual UI testing with live browser |
+| `/sprint:generate-map` | Generate project-map.md |
+| `/sprint:clean` | Remove old sprint directories |
+
+### Manual Testing Mode
+
+Sometimes you want to explore the UI yourself rather than run automated tests. There are two ways:
+
+#### Within a Sprint
+
+Set `UI Testing Mode: manual` in your `specs.md`:
+
+```markdown
+## Testing
+- UI Testing: required
+- UI Testing Mode: manual
+```
+
+When the architect requests UI testing:
+1. **Chrome opens a browser tab** pointing to your app
+2. **You interact with the app manually** — click around, test forms, explore edge cases
+3. **Console errors are monitored** in real-time
+4. **Close the browser tab** when you're done testing
+5. Sprint continues with architect review of your session report
+
+For Next.js projects, a diagnostics agent also monitors for compilation and hydration errors.
+
+#### Standalone Testing
+
+For quick testing outside of sprints:
+
+```bash
+/sprint:test
+```
+
+Opens a browser, monitors errors, and saves a report when you say "finish testing".
+
+**Reports feed into sprints:** The report is saved to `.claude/sprint/[N]/manual-test-report.md`. When you run `/sprint`, the architect sees your observations and prioritizes fixing the issues you discovered.
+
+## Plugin Structure
 
 ```
-.claude/
+sprint/
+├── .claude-plugin/
+│   └── plugin.json           # Plugin manifest
+├── commands/                  # Slash commands
+│   ├── sprint.md              # Main workflow (/sprint)
+│   ├── new.md                 # Create sprints (/sprint:new)
+│   ├── setup.md               # Project onboarding
+│   ├── test.md                # Manual UI testing
+│   ├── generate-map.md        # Generate project map
+│   └── clean.md               # Cleanup utility
 ├── agents/                    # Agent definitions
 │   ├── project-architect.md   # Coordinator agent
-│   ├── python-dev.md          # Backend agent
-│   ├── nextjs-dev.md          # Frontend agent
+│   ├── python-dev.md          # Python/FastAPI backend
+│   ├── nextjs-dev.md          # Next.js frontend
+│   ├── allpurpose-agent.md    # Any tech stack
 │   ├── qa-test-agent.md       # API/unit testing
-│   ├── ui-test-agent.md       # E2E testing
-│   └── ...
-├── commands/                  # Slash commands
-│   ├── sprint.md              # Main workflow
-│   ├── new-sprint.md          # Create sprints
-│   ├── generate-map.md        # Generate project map
-│   └── clean-sprints.md       # Cleanup utility
-├── sprint/                    # Sprint artifacts
-│   └── 1/                     # Sprint 1
-│       ├── specs.md           # Your requirements
-│       ├── api-contract.md    # Generated API spec
-│       ├── backend-specs.md   # Backend guidance
-│       ├── frontend-specs.md  # Frontend guidance
-│       ├── status.md          # Sprint status
-│       └── *-report-*.md      # Agent reports
-├── project-map.md             # System overview
-└── project-goals.md           # Product objectives
+│   ├── ui-test-agent.md       # E2E browser testing
+│   ├── nextjs-diagnostics-agent.md  # Next.js monitoring (optional)
+│   ├── cicd-agent.md          # CI/CD pipelines
+│   └── website-designer.md    # Static websites
+├── skills/                    # Knowledge modules
+│   ├── sprint-workflow/       # How sprints work
+│   ├── spec-writing/          # Writing effective specs
+│   ├── agent-patterns/        # Agent coordination
+│   └── api-contract/          # Contract design
+└── docs/                      # Documentation
 ```
 
-### Specification Files
+## Agents
+
+### Implementation Agents
+
+| Agent | Tech Stack | Description |
+|-------|------------|-------------|
+| `python-dev` | FastAPI, PostgreSQL | Python backend development |
+| `nextjs-dev` | Next.js 16, React 19 | Next.js frontend development |
+| `cicd-agent` | GitHub Actions, Docker | CI/CD pipelines |
+| `allpurpose-agent` | Any | Adapts to any technology |
+| `website-designer` | Static HTML/CSS | Marketing websites |
+
+### Testing Agents
+
+| Agent | Purpose | Tools |
+|-------|---------|-------|
+| `qa-test-agent` | API & unit tests | pytest, jest, vitest |
+| `ui-test-agent` | E2E browser tests | Chrome browser MCP |
+| `nextjs-diagnostics-agent` | Runtime monitoring (Next.js only) | Next.js DevTools MCP |
+
+### Writing Your Own Agents
+
+Create a markdown file in your project's `.claude/agents/` or contribute to this plugin:
+
+```yaml
+---
+name: your-agent
+description: What this agent does
+model: opus
+---
+
+[Agent instructions...]
+```
+
+The architect can then request your agent via SPAWN REQUEST blocks.
+
+## Specification Files
 
 **`specs.md`** - Your input (minimal or detailed):
 ```markdown
-# Sprint 1 Specifications
+# Sprint 1: User Authentication
 
 ## Goal
-Add user authentication with OAuth
+Add user authentication with email/password login
+
+## Scope
+### In Scope
+- Registration endpoint
+- Login endpoint
+- JWT tokens
+
+### Out of Scope
+- OAuth providers
+- Password reset
 
 ## Testing
 - QA: required
@@ -143,171 +267,22 @@ Request: { email: string, password: string }
 Response: { token: string, user: User }
 ```
 
-### Agent Reports
+## Skills
 
-Every agent returns a structured report:
-```markdown
-## BACKEND IMPLEMENTATION REPORT
+Sprint includes knowledge modules that Claude can load when needed:
 
-### CONFORMITY STATUS: YES
-
-### DEVIATIONS:
-None
-
-### FILES CHANGED:
-- backend/api/auth.py
-- backend/models/user.py
-
-### ISSUES FOUND:
-- None
-```
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/sprint` | Run the full sprint workflow |
-| `/sprint --manual` | Manual UI testing with live browser |
-| `/new-sprint` | Create a new sprint |
-| `/generate-map` | Generate project-map.md |
-| `/clean-sprints` | Remove old sprint directories |
-
-### Manual Testing Mode
-
-Sometimes you want to explore the UI yourself rather than run automated tests. The `--manual` flag enables **hybrid testing**:
-
-```bash
-/sprint --manual
-```
-
-What happens:
-1. **Playwright opens a browser** pointing to your app (e.g., `http://localhost:8001`)
-2. **A diagnostics agent runs in parallel**, monitoring for runtime errors in real-time
-3. **You interact with the app manually** — click around, test forms, explore edge cases
-4. **All errors are captured** by the diagnostics agent as you explore
-5. **When you close the browser**, both agents finalize and return their reports
-
-We ship a Next.js diagnostics agent out of the box. **Write your own** for other stacks — any MCP-compatible observability tool works (Laravel Telescope, Rails logs, etc.).
-
-This is perfect for:
-- Exploratory testing after implementation
-- Debugging UI issues with live error monitoring
-- Quick smoke tests without writing test specs
-- Validating UX flows that are hard to automate
-
-You can also trigger manual mode from specs:
-```markdown
-## Testing
-- UI Testing Mode: manual
-```
-
-## Agents
-
-The agent system is **extensible by design**. Start with the built-in agents, then add your own.
-
-### Built-in Implementation Agents
-
-| Agent | Tech Stack | Input Specs |
-|-------|------------|-------------|
-| `python-dev` | FastAPI, PostgreSQL | `api-contract.md`, `backend-specs.md` |
-| `nextjs-dev` | Next.js 16, React 19 | `api-contract.md`, `frontend-specs.md` |
-| `cicd-agent` | GitHub Actions, Docker | `cicd-specs.md` |
-
-### Built-in Testing Agents
-
-| Agent | Purpose | Tools |
-|-------|---------|-------|
-| `qa-test-agent` | API & unit tests | pytest, jest |
-| `ui-test-agent` | E2E browser tests | Playwright MCP |
-| `nextjs-diagnostics-agent` | Runtime monitoring (Next.js) | Next.js DevTools MCP |
-
-The diagnostics agent pattern can be replicated for any stack — create your own using MCP-compatible observability tools (Laravel Telescope, Rails logs, Docker logs, etc.).
-
-### Allpurpose Agent (Fallback)
-
-No specialized agent for your stack? The `allpurpose-agent` adapts to **any technology** — Go, Rust, Flutter, Ruby, whatever you need.
-
-The architect automatically uses it when no specialized agent exists, creating appropriate spec files (e.g., `mobile-specs.md`, `cli-specs.md`) and prompting the agent with the right context. You just write your `specs.md` — the architect handles the rest.
-
-### Write Your Own Agents
-
-These agents are starting points, not final products. **Fork, extend, contribute.**
-
-See [Adding Custom Agents](docs/AGENTS.md#adding-custom-agents) for the guide.
-
-## MCP Integration
-
-Agentic Sprint leverages MCP (Model Context Protocol) for browser automation and Next.js monitoring:
-
-### Playwright MCP
-UI Test Agent uses Playwright tools for browser interaction:
-```
-mcp__playwright__browser_navigate
-mcp__playwright__browser_click
-mcp__playwright__browser_snapshot
-...
-```
-
-### Next.js DevTools MCP
-Diagnostics Agent monitors for runtime errors:
-```
-mcp__next-devtools__nextjs_call
-mcp__next-devtools__get_errors
-...
-```
-
-### Parallel Agent Coordination
-
-When UI tests run, both agents work in parallel. They coordinate via a signal file:
-```
-.claude/sprint/[N]/.ui-test-done
-```
-
-See [MCP-COORDINATION.md](docs/MCP-COORDINATION.md) for details.
-
-## Customization
-
-### Adding Custom Agents
-
-1. Create `.claude/agents/your-agent.md`:
-```yaml
----
-name: your-agent
-description: What this agent does
-model: opus
----
-
-[Agent instructions...]
-```
-
-2. The architect can now request your agent in SPAWN REQUEST blocks.
-
-### Extending Specs
-
-Add any spec files your agents need:
-- `mobile-specs.md` for mobile development
-- `security-specs.md` for security-focused work
-- `performance-specs.md` for optimization tasks
+- **sprint-workflow** — Convergent diffusion model, phase lifecycle
+- **spec-writing** — How to write effective specifications
+- **agent-patterns** — SPAWN REQUEST format, report structure
+- **api-contract** — Designing shared contracts
 
 ## Best Practices
 
-1. **Write clear specs** - The better your `specs.md`, the better the output
-2. **Use project-goals.md** - Give context about your product vision
-3. **Iterate small** - Multiple small sprints beat one big sprint
-4. **Checkpoint often** - Commit before running sprints
-5. **Review reports** - Agent reports show what was done and why
-
-## Project Structure for New Projects
-
-Recommended setup:
-```
-your-project/
-├── .claude/           # Agentic Sprint (this repo)
-├── backend/           # Python/FastAPI
-├── frontend/          # Next.js
-├── docker-compose.yml # Development environment
-└── README.md
-```
+1. **Run setup first** — Use `/sprint:setup` to create project-goals.md and project-map.md
+2. **Write clear specs** — The better your `specs.md`, the better the output
+3. **Iterate small** — Multiple small sprints beat one big sprint
+4. **Checkpoint often** — Commit before running sprints
+5. **Review reports** — Agent reports show what was done and why
 
 ## Troubleshooting
 
@@ -321,16 +296,9 @@ your-project/
 - Check for conflicting information in spec files
 - Architect may need to clarify specs
 
-### MCP tools not working
-- Verify MCP servers are running
-- Check port configuration (Docker: 8001, Local: 3000)
-- See [MCP-COORDINATION.md](docs/MCP-COORDINATION.md)
-
 ## Documentation
 
 - [Agent Architecture](docs/AGENTS.md) - Deep dive into agent system
-- [MCP Coordination](docs/MCP-COORDINATION.md) - Parallel agent patterns
-- [Example Project Goals](examples/project-goals.md) - Templates for project-goals.md
 
 ## License
 
@@ -347,12 +315,6 @@ Ways to contribute:
 - **Report issues** — what breaks? what's confusing?
 - **Improve docs** — help others get started
 
-Please read the [agent documentation](docs/AGENTS.md) before submitting PRs.
-
 ---
 
-Built with Claude Code. Designed for autonomous development.
-
----
-
-<sub>*This documentation was generated with AI assistance and may contain errors. Please report issues on GitHub.*</sub>
+Built with Claude Code. Part of [Agentic Forge](https://github.com/damienlaine/agentic-forge).

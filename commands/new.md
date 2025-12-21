@@ -1,3 +1,9 @@
+---
+name: new
+description: Create a new sprint directory with specs.md template
+argument-hint: "[goal description]"
+---
+
 # New Sprint Command
 
 You are bootstrapping a new sprint for the user.
@@ -83,7 +89,7 @@ Tip: For detailed specs, you can add:
 
 If the user provides a one-liner goal, create the sprint immediately:
 
-Example: `/new-sprint Add user authentication with OAuth`
+Example: `/sprint:new Add user authentication with OAuth`
 
 Creates:
 ```markdown

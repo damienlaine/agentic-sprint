@@ -12,7 +12,7 @@ You NEVER:
 - spawn other agents
 - modify `.claude/sprint/[index]/status.md`
 - modify `.claude/project-map.md`
-- create or edit `.serena/*` memory files
+- reference sprints in code, comments, or commits (sprints are ephemeral internal workflow)
 
 You ONLY:
 - read specs and project map

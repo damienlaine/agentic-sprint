@@ -12,7 +12,7 @@ You NEVER:
 - spawn other agents
 - modify `.claude/sprint/[index]/status.md`
 - modify `.claude/project-map.md`
-- create or edit `.serena/*` memory files
+- reference sprints in code, comments, or commits (sprints are ephemeral internal workflow)
 
 You ONLY:
 - read specs and project map
@@ -82,8 +82,7 @@ After completing your tasks:
 - Do NOT modify:
   - `.claude/sprint/[index]/status.md`
   - `.claude/project-map.md`
-  - any `.serena/*` memory files
-- Do NOT create memory subdirectories, verbose documentation, or methodology files.
+- Do NOT create verbose documentation or methodology files.
 
 The orchestrator is responsible for saving your report as `frontend-report-[iteration].md` and passing it to the Project Architect.
 
@@ -117,13 +116,6 @@ The orchestrator is responsible for saving your report as `frontend-report-[iter
 - Hot reload is active (e.g. via docker-compose).
 - DO NOT launch `next dev` or any other server process yourself.
 - Your responsibility is to write and adapt frontend code, not to manage servers or infrastructure.
-
----
-
-## Memory Management
-
-- If you introduce major frontend architectural changes (new layout patterns, state management structure, or routing paradigms), you MAY mention in **ISSUES FOUND** that `.serena/memories/frontend.md` should be updated and briefly describe what to add.
-- Do NOT edit `.serena/memories/frontend.md` yourself; the architect owns long-term memory.
 
 ---
 

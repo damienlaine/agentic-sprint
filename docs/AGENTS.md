@@ -1,10 +1,10 @@
 # Agent Architecture
 
-> Comprehensive documentation of the Agentic Sprint agent system.
+> Comprehensive documentation of the Sprint agent system.
 
 ## Overview
 
-Agentic Sprint uses a hierarchical multi-agent architecture where specialized agents collaborate under the coordination of an orchestrator and architect.
+Sprint uses a hierarchical multi-agent architecture where specialized agents collaborate under the coordination of an orchestrator and architect.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -44,7 +44,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 **Role:** Conductor of the development workflow
 
 **Responsibilities:**
-- Parse command arguments (`/sprint`, `/sprint --manual`)
+- Parse `/sprint` command
 - Locate sprint specifications
 - Manage the phase loop (Planning → Implementation → Testing → Review)
 - Spawn agents at the right time
@@ -60,7 +60,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 **Role:** Technical decision-maker and coordinator
 
-**File:** `.claude/agents/project-architect.md`
+**File:** `agents/project-architect.md` (plugin)
 
 **Responsibilities:**
 - Analyze requirements and create specifications
@@ -83,7 +83,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### Python Dev
 
-**File:** `.claude/agents/python-dev.md`
+**File:** `agents/python-dev.md` (plugin)
 
 **Stack:** FastAPI, PostgreSQL, async patterns
 
@@ -93,7 +93,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### Next.js Dev
 
-**File:** `.claude/agents/nextjs-dev.md`
+**File:** `agents/nextjs-dev.md` (plugin)
 
 **Stack:** Next.js 16, React 19, TypeScript, TailwindCSS
 
@@ -103,7 +103,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### CI/CD Agent
 
-**File:** `.claude/agents/cicd-agent.md`
+**File:** `agents/cicd-agent.md` (plugin)
 
 **Scope:** Pipelines, deployments, secrets
 
@@ -113,7 +113,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### Allpurpose Agent
 
-**File:** `.claude/agents/allpurpose-agent.md`
+**File:** `agents/allpurpose-agent.md` (plugin)
 
 **Scope:** Any technology not covered by specialized agents
 
@@ -125,7 +125,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### QA Test Agent
 
-**File:** `.claude/agents/qa-test-agent.md`
+**File:** `agents/qa-test-agent.md` (plugin)
 
 **Scope:** API tests, unit tests, integration tests
 
@@ -135,21 +135,21 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 #### UI Test Agent
 
-**File:** `.claude/agents/ui-test-agent.md`
+**File:** `agents/ui-test-agent.md` (plugin)
 
-**Scope:** Browser-based E2E testing with Playwright
+**Scope:** Browser-based E2E testing with Chrome browser MCP
 
-**Tools:** `mcp__playwright__*` only
+**Tools:** `mcp__claude-in-chrome__*` only
 
 **Modes:**
-- `AUTOMATED` - Execute all test scenarios
-- `MANUAL` - Open browser for user interaction
+- `AUTOMATED` - Execute all test scenarios from specs
+- `MANUAL` - Open browser for user interaction; detects tab close to know when testing is complete
 
 **Output:** `## UI TEST REPORT`
 
 #### Next.js Diagnostics Agent
 
-**File:** `.claude/agents/nextjs-diagnostics-agent.md`
+**File:** `agents/nextjs-diagnostics-agent.md` (plugin)
 
 **Scope:** Runtime error monitoring during UI testing
 
@@ -159,7 +159,7 @@ Agentic Sprint uses a hierarchical multi-agent architecture where specialized ag
 
 ### Website Designer
 
-**File:** `.claude/agents/website-designer.md`
+**File:** `agents/website-designer.md` (plugin)
 
 **Scope:** Static marketing websites for GitHub Pages
 
@@ -200,17 +200,6 @@ All agents return structured reports:
 - [issues]
 ```
 
-### Signal File (Agent Coordination)
-
-For parallel agent coordination:
-
-```
-.claude/sprint/[N]/.ui-test-done
-```
-
-- Written by `ui-test-agent` when testing completes
-- Read by `nextjs-diagnostics-agent` to know when to stop
-
 ## Agent Constraints
 
 ### What Agents CAN Do
@@ -240,7 +229,12 @@ model: sonnet  # For lighter tasks (CI/CD, diagnostics)
 
 ## Adding Custom Agents
 
-1. Create agent definition in `.claude/agents/[name].md`
+**Option 1: Contribute to the plugin** - Add agents to `agents/` in the plugin
+
+**Option 2: Project-local agents** - Create agents in your project's `.claude/agents/` directory
+
+Steps:
+1. Create agent definition as a markdown file
 2. Follow the standard frontmatter format:
    ```yaml
    ---
@@ -251,7 +245,7 @@ model: sonnet  # For lighter tasks (CI/CD, diagnostics)
    ```
 3. Define clear input specs and output format
 4. Specify tool restrictions (if any)
-5. Add the agent to architect's spawn options
+5. The architect can then request your agent via SPAWN REQUEST blocks
 
 ## Sprint Iteration Flow
 

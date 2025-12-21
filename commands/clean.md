@@ -1,3 +1,9 @@
+---
+name: clean
+description: Remove old sprint directories with safety checks and archiving options
+argument-hint: "[--all | --keep-latest | --keep N]"
+---
+
 # Clean Sprints Command
 
 You are cleaning up old sprint directories.
@@ -58,8 +64,8 @@ Uncommitted files:
 
 Recommendation: Commit your changes before cleaning.
 
-git add .claude/sprint/
-git commit -m "Checkpoint: sprint artifacts before cleanup"
+git add .claude/
+git commit -m "Checkpoint before cleanup"
 
 Continue anyway? (y/N)
 ```
@@ -105,16 +111,16 @@ Remaining:
 - .claude/sprint/[N]/
 
 Tip: Create a checkpoint now:
-git add -A && git commit -m "Clean sprint history"
+git add -A && git commit -m "Cleanup old iterations"
 ```
 
 ## Quick Mode
 
 For quick cleanup without prompts:
 
-`/clean-sprints --all` - Remove all sprints
-`/clean-sprints --keep-latest` - Keep only the latest
-`/clean-sprints --keep 3` - Keep the 3 most recent
+`/sprint:clean --all` - Remove all sprints
+`/sprint:clean --keep-latest` - Keep only the latest
+`/sprint:clean --keep 3` - Keep the 3 most recent
 
 ## Archive Option
 
@@ -134,8 +140,8 @@ Always remind the user:
 ```
 REMINDER: You are responsible for checkpointing your work.
 
-Before cleaning sprints, consider:
-1. git add .claude/ && git commit -m "Sprint checkpoint"
+Before cleaning, consider:
+1. git add .claude/ && git commit -m "Checkpoint"
 2. Push to remote if you want off-machine backup
 3. Keep sprint specs if you might need to reference them
 
